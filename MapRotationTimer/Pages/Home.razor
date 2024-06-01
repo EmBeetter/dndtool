@@ -17,6 +17,14 @@ else
                 <h3>Current Map</h3>
             </div>
             <div class="card-body">
+                <div class="form-group">
+                    <label for="queueSelect">Select Queue:</label>
+                    <select id="queueSelect" class="form-control dark-theme-select" @onchange="OnQueueChange">
+                        <option value="trio">Trio Queue</option>
+                        <option value="duo">Duo Queue</option>
+                        <option value="solo">Solo Queue</option>
+                    </select>
+                </div>
                 <h4 class="card-title">@CurrentMap</h4>
                 <p class="card-text">Time Remaining on Current Map:</p>
                 <div class="progress">
@@ -51,6 +59,7 @@ else
     private string CountdownToNextMap => GetCountdownToNextMap();
     private string SelectedMap;
     private bool notificationSent = false;
+    private int queueOffsetMinutes = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,7 +78,7 @@ else
 
     private void UpdateCurrentMap()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
         var elapsedMinutes = (utcNow - referenceTime).TotalMinutes;
         CurrentMapIndex = ((int)elapsedMinutes / 3) % Maps.Length;
         notificationSent = false;
@@ -77,14 +86,14 @@ else
     }
     private double GetProgressPercentage()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
         var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
         var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
         return (currentMapElapsedSeconds / (3 * 60)) * 100;
     }
     private string GetTimeRemainingOnCurrentMap()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
         var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
         var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
         var remainingSeconds = (3 * 60) - currentMapElapsedSeconds;
@@ -93,7 +102,7 @@ else
 
     private string GetCountdownToNextMap()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
         var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
         var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
         var remainingSeconds = (3 * 60) - currentMapElapsedSeconds;
@@ -107,7 +116,7 @@ else
             return "Current map"; // If the current map is the requested map, no countdown needed
         }
 
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
         var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
         var totalSeconds = ((int)elapsedSeconds / (3 * 60)) * (3 * 60);
         while (Maps[(totalSeconds / (3 * 60)) % Maps.Length] != map)
@@ -137,6 +146,18 @@ else
     private void PlayNotificationSound()
     {
         JS.InvokeVoidAsync("playNotificationSound");
+    }
+
+    private void OnQueueChange(ChangeEventArgs e)
+    {
+        var selectedQueue = e.Value.ToString();
+        queueOffsetMinutes = selectedQueue switch
+        {
+            "duo" => 3,
+            "solo" => 6,
+            _ => 0,
+        };
+        UpdateCurrentMap();
     }
 
     public void Dispose()
