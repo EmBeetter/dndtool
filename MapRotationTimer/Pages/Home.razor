@@ -14,7 +14,7 @@ else
     <div class="container mt-5" id="mainContainer">
         <div class="card">
             <div class="card-header">
-                <h3>Map rotation</h3>
+                <h3>Map Rotation</h3>
             </div>
             <div class="card-body">
                 <div class="form-group">
@@ -30,7 +30,7 @@ else
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: @GetProgressPercentage()%" aria-valuenow="@GetProgressPercentage()" aria-valuemin="0" aria-valuemax="100">@TimeRemainingOnCurrentMap</div>
                 </div>
-                <ul>
+                <ul class="map-list">
                     @foreach (var map in Maps)
                     {
                         <li class="@(CurrentMap == map ? "current-map" : "") @(SelectedMap == map ? "selected-map" : "")" @onclick="() => SelectMap(map)">
@@ -152,8 +152,8 @@ else
         var selectedQueue = e.Value.ToString();
         queueOffsetMinutes = selectedQueue switch
         {
-            "duo" => 3,
-            "solo" => 6,
+            "duo" => 6,
+            "solo" => 3,
             _ => 0,
         };
         UpdateCurrentMap();
