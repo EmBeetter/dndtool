@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MapRotationTimer",
   "resources": {
-    "hash": "sha256-tn66Xktr2PQ0L8bOC4EmvIoSurPggH7Yg+Hsn6UsX7k=",
+    "hash": "sha256-Cqm6/k9b8nbrFVtIPT4jqhgSoZJeO6JPf2ORY2uNkl8=",
     "jsModuleNative": {
       "dotnet.native.8.0.6.suuomc2hr0.js": "sha256-YU6M9+jtDVnB8/wtrgIndOstzNh778Ls8g9XnbjorSk="
     },
@@ -17,7 +17,7 @@
       "icudt_no_CJK.dat": "sha256-L7sV7NEYP37/Qr2FPCePo5cJqRgTXRwGHuwF5Q+0Nfs="
     },
     "assembly": {
-      "MapRotationTimer.wasm": "sha256-MCIxqkGkzHPVGf+GFxibXnwuW9MIwOvnu7NWWjEbmTo=",
+      "MapRotationTimer.wasm": "sha256-/8Spld7IYBuOhren8VNNbWfvmzuiwV0eE/67GhYc4TM=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-i04JHXg90dO/2GyoX3+GIAXtRMhOkTsi4nQj6/llHCs=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-mmo6S4AxiBcnKbs4b+7ObftqPCkIcLGiAv9gICT/5NY=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-d6tN87QrJstiTMcLaUtZ6TWiNHa8A74Suuzx95thRrE=",
