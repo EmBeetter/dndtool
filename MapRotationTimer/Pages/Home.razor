@@ -30,7 +30,6 @@ else
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" style="width: @GetProgressPercentage()%" aria-valuenow="@GetProgressPercentage()" aria-valuemin="0" aria-valuemax="100">@TimeRemainingOnCurrentMap</div>
                 </div>
-                <p class="card-text">Next map in: @CountdownToNextMap</p>
                 <ul>
                     @foreach (var map in Maps)
                     {
