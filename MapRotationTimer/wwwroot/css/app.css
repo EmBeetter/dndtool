@@ -29,7 +29,7 @@
 }
 
     .card:hover {
-        transform: scale(1.02);
+        transform: scale(1.01);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
@@ -68,7 +68,10 @@
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-    .dark-theme-select:focus {
+    .dark-theme-select:focus,
+    .dark-theme-select:active {
+        background-color: #2c2c2c;
+        color: #e0e0e0;
         border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         outline: none;
