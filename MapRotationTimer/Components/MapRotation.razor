@@ -5,51 +5,51 @@
 
 @if (isLoading)
 {
-        <div class="loading-spinner"></div>
-        <div class="loading-progress">
-            <svg viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="15"></circle>
-                <circle cx="18" cy="18" r="15" style="--blazor-load-percentage: 0.75;"></circle>
-            </svg>
-            <div class="loading-progress-text"></div>
-        </div>
+    <div class="loading-spinner"></div>
+    <div class="loading-progress">
+        <svg viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15"></circle>
+            <circle cx="18" cy="18" r="15" style="--blazor-load-percentage: 0.75;"></circle>
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
 }
 else
 {
-        <div class="container mt-5" id="mainContainer">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Map Rotation</h3>
+    <div class="container mt-5" id="mainContainer">
+        <div class="card">
+            <div class="card-header">
+                <h3>Map Rotation</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="queueSelect">Select Queue:</label>
+                    <select id="queueSelect" class="form-control dark-theme-select" @onchange="OnQueueChange">
+                        <option value="trio">Trio Queue</option>
+                        <option value="duo">Duo Queue</option>
+                        <option value="solo">Solo Queue</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="queueSelect">Select Queue:</label>
-                        <select id="queueSelect" class="form-control dark-theme-select" @onchange="OnQueueChange">
-                            <option value="trio">Trio Queue</option>
-                            <option value="duo">Duo Queue</option>
-                            <option value="solo">Solo Queue</option>
-                        </select>
-                    </div>
-                    <h4 class="card-title">@CurrentMap</h4>
-                    <p class="card-text">Time Remaining on Current Map:</p>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: @GetProgressPercentage()%" aria-valuenow="@GetProgressPercentage()" aria-valuemin="0" aria-valuemax="100">@TimeRemainingOnCurrentMap</div>
-                    </div>
-                    <ul class="map-list">
+                <h4 class="card-title">@CurrentMap</h4>
+                <p class="card-text">Time Remaining on Current Map:</p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: @GetProgressPercentage()%" aria-valuenow="@GetProgressPercentage()" aria-valuemin="0" aria-valuemax="100">@TimeRemainingOnCurrentMap</div>
+                </div>
+                <ul class="map-list">
                     @foreach (var map in Maps)
                     {
-                                <li class="@(CurrentMap == map ? "current-map" : "") @(SelectedMap == map ? "selected-map" : "")" @onclick="() => SelectMap(map)">
-                                    Time Until @map: @GetTimeUntilMap(map)
-                                </li>
+                        <li class="@(CurrentMap == map ? "current-map" : "") @(SelectedMap == map ? "selected-map" : "")" @onclick="() => SelectMap(map)">
+                            Time Until @map: @GetTimeUntilMap(map)
+                        </li>
                     }
-                    </ul>
+                </ul>
                 @if (!string.IsNullOrEmpty(SelectedMap))
                 {
-                            <p class="card-text selected-map-text">You will be notified when the map changes to <strong>@SelectedMap</strong>.</p>
+                    <p class="card-text selected-map-text">You will be notified when the map changes to <strong>@SelectedMap</strong>.</p>
                 }
-                </div>
             </div>
         </div>
+    </div>
 }
 
 @code {
@@ -67,6 +67,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await RequestNotificationPermission();
         timer = new Timer(1000); // 1 second interval
         timer.Elapsed += OnTimerElapsed;
         timer.Start();
@@ -149,9 +150,20 @@ else
         }
     }
 
-    private void PlayNotificationSound()
+    private async Task PlayNotificationSound()
     {
-        JS.InvokeVoidAsync("playNotificationSound");
+        await JS.InvokeVoidAsync("playNotificationSound");
+        await ShowNotification();
+    }
+
+    private async Task ShowNotification()
+    {
+        await JS.InvokeVoidAsync("showNotification", new { title = "Map Change Alert", message = $"The map has changed to {CurrentMap}.", icon = "/path/to/icon.png" });
+    }
+
+    private async Task RequestNotificationPermission()
+    {
+        await JS.InvokeVoidAsync("requestNotificationPermission");
     }
 
     private void OnQueueChange(ChangeEventArgs e)
