@@ -1,0 +1,173 @@
+﻿@using System.Timers
+@inject IJSRuntime JS
+
+@implements IDisposable
+
+@if (isLoading)
+{
+        <div class="loading-spinner"></div>
+        <div class="loading-progress">
+            <svg viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15"></circle>
+                <circle cx="18" cy="18" r="15" style="--blazor-load-percentage: 0.75;"></circle>
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
+}
+else
+{
+        <div class="container mt-5" id="mainContainer">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Map Rotation</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="queueSelect">Select Queue:</label>
+                        <select id="queueSelect" class="form-control dark-theme-select" @onchange="OnQueueChange">
+                            <option value="trio">Trio Queue</option>
+                            <option value="duo">Duo Queue</option>
+                            <option value="solo">Solo Queue</option>
+                        </select>
+                    </div>
+                    <h4 class="card-title">@CurrentMap</h4>
+                    <p class="card-text">Time Remaining on Current Map:</p>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: @GetProgressPercentage()%" aria-valuenow="@GetProgressPercentage()" aria-valuemin="0" aria-valuemax="100">@TimeRemainingOnCurrentMap</div>
+                    </div>
+                    <ul class="map-list">
+                    @foreach (var map in Maps)
+                    {
+                                <li class="@(CurrentMap == map ? "current-map" : "") @(SelectedMap == map ? "selected-map" : "")" @onclick="() => SelectMap(map)">
+                                    Time Until @map: @GetTimeUntilMap(map)
+                                </li>
+                    }
+                    </ul>
+                @if (!string.IsNullOrEmpty(SelectedMap))
+                {
+                            <p class="card-text selected-map-text">You will be notified when the map changes to <strong>@SelectedMap</strong>.</p>
+                }
+                </div>
+            </div>
+        </div>
+}
+
+@code {
+    private string[] Maps = { "Frost", "Goblin", "Crypt" };
+    private int CurrentMapIndex = 0;
+    private string CurrentMap => Maps[CurrentMapIndex];
+    private string TimeRemainingOnCurrentMap => GetTimeRemainingOnCurrentMap();
+    private Timer timer;
+    private DateTime referenceTime = new DateTime(2024, 6, 1, 16, 48, 0, DateTimeKind.Utc);
+    private bool isLoading = true;
+    private string CountdownToNextMap => GetCountdownToNextMap();
+    private string SelectedMap;
+    private bool notificationSent = false;
+    private int queueOffsetMinutes = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        timer = new Timer(1000); // 1 second interval
+        timer.Elapsed += OnTimerElapsed;
+        timer.Start();
+        UpdateCurrentMap();
+        isLoading = false;
+    }
+
+    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        UpdateCurrentMap();
+        CheckAndPlayNotification();
+    }
+
+    private void UpdateCurrentMap()
+    {
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
+        var elapsedMinutes = (utcNow - referenceTime).TotalMinutes;
+        CurrentMapIndex = ((int)elapsedMinutes / 3) % Maps.Length;
+        notificationSent = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private double GetProgressPercentage()
+    {
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
+        var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
+        var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
+        return (currentMapElapsedSeconds / (3 * 60)) * 100;
+    }
+
+    private string GetTimeRemainingOnCurrentMap()
+    {
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
+        var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
+        var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
+        var remainingSeconds = (3 * 60) - currentMapElapsedSeconds;
+        return TimeSpan.FromSeconds(remainingSeconds).ToString(@"mm\:ss");
+    }
+
+    private string GetCountdownToNextMap()
+    {
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
+        var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
+        var currentMapElapsedSeconds = elapsedSeconds % (3 * 60);
+        var remainingSeconds = (3 * 60) - currentMapElapsedSeconds;
+        return TimeSpan.FromSeconds(remainingSeconds).ToString(@"mm\:ss");
+    }
+
+    private string GetTimeUntilMap(string map)
+    {
+        if (CurrentMap == map)
+        {
+            return "Current map"; // If the current map is the requested map, no countdown needed
+        }
+
+        var utcNow = DateTime.UtcNow.AddMinutes(-queueOffsetMinutes);
+        var elapsedSeconds = (utcNow - referenceTime).TotalSeconds;
+        var totalSeconds = ((int)elapsedSeconds / (3 * 60)) * (3 * 60);
+        while (Maps[(totalSeconds / (3 * 60)) % Maps.Length] != map)
+        {
+            totalSeconds += (3 * 60);
+        }
+        var timeUntilMapSeconds = totalSeconds - (int)elapsedSeconds;
+        return TimeSpan.FromSeconds(timeUntilMapSeconds).ToString(@"hh\:mm\:ss");
+    }
+
+    private void SelectMap(string map)
+    {
+        SelectedMap = map;
+        notificationSent = false;
+    }
+
+    private void CheckAndPlayNotification()
+    {
+        if (SelectedMap == CurrentMap && !notificationSent)
+        {
+            PlayNotificationSound();
+            notificationSent = true;
+            SelectedMap = null;
+        }
+    }
+
+    private void PlayNotificationSound()
+    {
+        JS.InvokeVoidAsync("playNotificationSound");
+    }
+
+    private void OnQueueChange(ChangeEventArgs e)
+    {
+        var selectedQueue = e.Value.ToString();
+        queueOffsetMinutes = selectedQueue switch
+        {
+            "duo" => 6,
+            "solo" => 3,
+            _ => 0,
+        };
+        UpdateCurrentMap();
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}
