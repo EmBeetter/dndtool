@@ -1,0 +1,160 @@
+﻿@page "/damage-calculator"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Damage Calculator</PageTitle>
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h3>Damage Calculator</h3>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@damageModel" OnValidSubmit="CalculateDamage">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label>Base Damage:</label>
+                    <InputNumber id="baseDamage" class="form-control" @bind-Value="damageModel.BaseDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Buff Weapon Damage:</label>
+                    <InputNumber id="buffWeaponDamage" class="form-control" @bind-Value="damageModel.BuffWeaponDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Combo Bonus:</label>
+                    <InputNumber id="comboBonus" class="form-control" @bind-Value="damageModel.ComboBonus" />
+                </div>
+                <div class="form-group">
+                    <label>Impact Zone Bonus:</label>
+                    <InputNumber id="impactZoneBonus" class="form-control" @bind-Value="damageModel.ImpactZoneBonus" />
+                </div>
+                <div class="form-group">
+                    <label>Gear Weapon Damage:</label>
+                    <InputNumber id="gearWeaponDamage" class="form-control" @bind-Value="damageModel.GearWeaponDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Magical Damage:</label>
+                    <InputNumber id="magicalDamage" class="form-control" @bind-Value="damageModel.MagicalDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Divine Strike Damage:</label>
+                    <InputNumber id="divineStrikeDamage" class="form-control" @bind-Value="damageModel.DivineStrikeDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Power Bonus:</label>
+                    <InputNumber id="powerBonus" class="form-control" @bind-Value="damageModel.PowerBonus" />
+                </div>
+                <div class="form-group">
+                    <label>Additional Damage:</label>
+                    <InputNumber id="additionalDamage" class="form-control" @bind-Value="damageModel.AdditionalDamage" />
+                </div>
+                <div class="form-group">
+                    <label>Hit Location Multiplier:</label>
+                    <InputNumber id="hitLocationMultiplier" class="form-control" @bind-Value="damageModel.HitLocationMultiplier" />
+                </div>
+                <div class="form-group">
+                    <label>Damage Reduction:</label>
+                    <InputNumber id="damageReduction" class="form-control" @bind-Value="damageModel.DamageReduction" />
+                </div>
+                <div class="form-group">
+                    <label>Penetration:</label>
+                    <InputNumber id="penetration" class="form-control" @bind-Value="damageModel.Penetration" />
+                </div>
+                <div class="form-group">
+                    <label>Projectile Reduction:</label>
+                    <InputNumber id="projectileReduction" class="form-control" @bind-Value="damageModel.ProjectileReduction" />
+                </div>
+                <div class="form-group">
+                    <label>Projectile Falloff:</label>
+                    <InputNumber id="projectileFalloff" class="form-control" @bind-Value="damageModel.ProjectileFalloff" />
+                </div>
+                <div class="form-group">
+                    <label>True Damage:</label>
+                    <InputNumber id="trueDamage" class="form-control" @bind-Value="damageModel.TrueDamage" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Calculate Damage</button>
+            </EditForm>
+
+            @if (result.HasValue)
+            {
+                <div class="alert alert-info mt-3">
+                    <strong>Total Damage: @result.Value</strong>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private DamageModel damageModel = new DamageModel();
+    private double? result;
+
+    private void CalculateDamage()
+    {
+        result = (
+            (
+                (
+                    (damageModel.BaseDamage + damageModel.BuffWeaponDamage) * damageModel.ComboBonus * damageModel.ImpactZoneBonus
+                    + damageModel.GearWeaponDamage + damageModel.MagicalDamage
+                    + damageModel.DivineStrikeDamage
+                )
+                * (1 + damageModel.PowerBonus)
+                + damageModel.AdditionalDamage
+            )
+            * damageModel.HitLocationMultiplier
+            * (1 - damageModel.DamageReduction * (1 - damageModel.Penetration))
+            * (1 - damageModel.ProjectileReduction)
+        ) * damageModel.ProjectileFalloff
+        + damageModel.TrueDamage;
+    }
+
+    public class DamageModel
+    {
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double BaseDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double BuffWeaponDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double ComboBonus { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double ImpactZoneBonus { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double GearWeaponDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double MagicalDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double DivineStrikeDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double PowerBonus { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double AdditionalDamage { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double HitLocationMultiplier { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double DamageReduction { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double Penetration { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double ProjectileReduction { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double ProjectileFalloff { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid number.")]
+        public double TrueDamage { get; set; }
+    }
+}
