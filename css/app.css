@@ -29,7 +29,6 @@
 }
 
     .card:hover {
-        transform: scale(1.01);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
@@ -202,6 +201,31 @@ code {
     }
 }
 
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 8px solid transparent;
+    border-top: 8px solid #d4af37; /* Gold color */
+    border-bottom: 8px solid #d4af37; /* Gold color */
+    animation: spin 1.5s linear infinite;
+    z-index: 1001;
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
 .loading-progress {
     position: relative;
     display: block;
@@ -219,7 +243,7 @@ code {
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #d4af37;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -229,6 +253,8 @@ code {
     text-align: center;
     font-weight: bold;
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    color: #e0e0e0; /* Light grey for text */
+    font-size: 1.2rem;
 }
 
     .loading-progress-text:after {
